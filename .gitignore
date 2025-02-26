@@ -1,7 +1,9 @@
 .build
-build_debug
-build_release
 .DS_Store
+examples/.build/*
+examples/*.yml
+examples/rendering
+examples/rendering.dSYM
 
 *.obj
 *.exe

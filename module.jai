@@ -54,7 +54,7 @@ render_component_tree :: (tree: *Node) -> string {
     return "";
 }
 
-#scope_file
+#scope_module
 
 // If HTML element
 is_void_html_element :: (name: string) -> bool {
@@ -80,6 +80,7 @@ is_void_html_element :: (name: string) -> bool {
     return false;
 }
 
+#scope_file
 #if HTML_COMPONENTS {
     #load "html_components.jai";
 }
