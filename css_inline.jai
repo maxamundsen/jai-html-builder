@@ -1,0 +1,3 @@
+InlineStyle :: (input: string) #expand {
+
+}

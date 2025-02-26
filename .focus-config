@@ -19,12 +19,9 @@ clear_build_output_before_running: true
 error_regex: ^(?P<file>.*):(?P<line>\d+),(?P<col>\d+): (?P<type>Error|Warning|Info|...):* (?P<msg>.*)|^(?P<msg1>.*error LNK.*)
 auto_jump_to_error:     false
 
-[Debug]
-build_command: jai build.jai
-
-[Build Debug Macos]
-build_command: arch -x86_64 /opt/jai/bin/jai-macos ./examples/main.jai
-run_command: build_debug/jai_program
+[Build & Run Example]
+build_command: jai-macos examples/rendering.jai
+run_command: examples/rendering
 key_binding: Cmd-Shift-B
 
 [[settings]]
