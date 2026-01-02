@@ -1,86 +1,144 @@
 #module_parameters(HTML_COMPONENTS := true, CSS_MACROS := false);
 
-Node :: struct {
-    Builder: String_Builder;
-    Children: []Node;
-}
-
-
-// We need to differentiate between different "node types"
-// For instance you may have a node such as `Div`, which renders to "<div></div>"
-// or you may have a such
 Node_Type :: enum {
     ELEMENT;
     ATTRIBUTE;
+    TEXT;
+    RAW;
+    GROUP;
+    DOCTYPE;
 }
 
-// "root" element-type Node.
-El :: (name: string, children: ..*Node) -> *Node {
-    return null;
-}
+Node :: struct {
+    type: Node_Type;
 
-// "Root" attribute-type Node. Renders to the following:
-// <div value1="value2"></div>
-Attr :: (name: string, value1: string, value2: string) -> *Node {
-    return null;
-}
+    union {
+        element: struct {
+            name: string;
+            children: []*Node;
+            attributes: []*Node;
+        };
 
-// Attributes may only have 1 value. This will render to the following:
-// <div value></div>
-Attr :: (name: string, value: string) -> *Node {
-    return null;
-}
+        attribute: struct {
+            name: string;
+            value: string;
+            has_value: bool;
+        };
 
-// Text nodes that "fill in" the contents of element tags
-Text :: (input: string) -> *Node {
-    return null;
-}
+        text: struct {
+            content: string;
+        };
 
-Textf :: (format: string, input: string) -> *Node {
-    return null;
-}
+        raw: struct {
+            content: string;
+        };
 
-// Grouping
-Group :: (children: ..*Node) -> *Node {
-    return null;
-}
+        group: struct {
+            children: []*Node;
+        };
 
-Group :: (children: []*Node) -> *Node {
-    return null;
+        doctype: struct {
+            sibling: *Node;
+        };
+    }
 }
 
 // Rendering
-render_component_tree :: (tree: *Node) -> string {
-    return "";
+render :: (node: *Node) -> string {
+    builder: String_Builder;
+    render_to_builder(node, *builder);
+    append(*builder, "\n");
+    return builder_to_string(*builder);
 }
 
-#scope_module
+render_to_builder :: (node: *Node, builder: *String_Builder) {
+    if !node return;
 
-// If HTML element
-is_void_html_element :: (name: string) -> bool {
-    if name == {
-	   case "area";    return true;
-	   case "base";    return true;
-	   case "br";      return true;
-	   case "col";     return true;
-	   case "command"; return true;
-	   case "embed";   return true;
-	   case "hr";      return true;
-	   case "img";     return true;
-	   case "input";   return true;
-	   case "keygen";  return true;
-	   case "link";    return true;
-	   case "meta";    return true;
-	   case "param";   return true;
-	   case "source";  return true;
-	   case "track";   return true;
-	   case "wbr";     return true;
+    if node.type == {
+        case .ELEMENT;
+            append(builder, "<");
+            append(builder, node.element.name);
+
+            for node.element.attributes {
+                render_attribute(it, builder);
+            }
+
+            append(builder, ">");
+
+            if !is_void_html_element(node.element.name) {
+                for node.element.children {
+                    render_to_builder(it, builder);
+                }
+
+                append(builder, "</");
+                append(builder, node.element.name);
+                append(builder, ">");
+            }
+
+        case .ATTRIBUTE;
+
+        case .TEXT;
+            escaped := html_escape(node.text.content);
+            append(builder, escaped);
+
+        case .RAW;
+            append(builder, node.raw.content);
+
+        case .GROUP;
+            for node.group.children {
+                render_to_builder(it, builder);
+            }
+
+        case .DOCTYPE;
+            append(builder, "<!DOCTYPE html>");
+            if node.doctype.sibling {
+                render_to_builder(node.doctype.sibling, builder);
+            }
+    }
+}
+
+render_attribute :: (attr: *Node, builder: *String_Builder) {
+    if attr.type != .ATTRIBUTE return;
+
+    append(builder, " ");
+    append(builder, attr.attribute.name);
+
+    if attr.attribute.has_value {
+        append(builder, "=\"");
+        escaped := html_escape(attr.attribute.value);
+        append(builder, escaped);
+        append(builder, "\"");
+    }
+}
+
+html_escape :: (input: string) -> string {
+    builder: String_Builder;
+
+    for 0..input.count-1 {
+        c := input[it];
+        if c == {
+            case #char "<";
+                append(*builder, "&lt;");
+            case #char ">";
+                append(*builder, "&gt;");
+            case #char "&";
+                append(*builder, "&amp;");
+            case #char "\"";
+                append(*builder, "&quot;");
+            case #char "'";
+                append(*builder, "&#39;");
+            case;
+                append(*builder, c);
+        }
     }
 
-    return false;
+    return builder_to_string(*builder);
 }
 
 #scope_file
+
+#load "base.jai";
+
 #if HTML_COMPONENTS {
     #load "html_components.jai";
 }

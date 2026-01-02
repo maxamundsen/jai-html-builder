@@ -1,4 +1,4 @@
-[13]  # Version number. Do not delete.
+[22]  # Version number. Do not delete.
 
 [[workspace]]
 # These directories and files will be scanned when a workspace is opened so that search etc. works.
@@ -8,8 +8,7 @@
 .git
 build_debug
 .build
-.DS_Store
-jai_program.dSYM
+*.DS_Store
 
 [[build commands]]
 build_working_dir:      ./

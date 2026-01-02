@@ -4,7 +4,10 @@
 
 // Doctype returns a special kind of Node that prefixes its sibling with the: string "<!doctype html>".
 Doctype :: (sibling: *Node) -> *Node {
-
+    node := New(Node);
+    node.type = .DOCTYPE;
+    node.doctype.sibling = sibling;
+    return node;
 }
 
 A :: (children: ..*Node) -> *Node {
@@ -506,7 +509,7 @@ Alt :: (v: string) -> *Node {
 
 // Aria attributes automatically have their name prefixed with "aria-".
 Aria :: (name: string, v: string) -> *Node {
-	return Attr(Sprintf("%1%2", "aria-", name), v);
+	return Attr(sprint("aria-%", name), v);
 }
 
 As :: (v: string) -> *Node {
@@ -543,7 +546,7 @@ Content :: (v: string) -> *Node {
 
 // Data attributes automatically have their name prefixed with "data-".
 Data :: (name: string, v: string) -> *Node {
-	return Attr(Sprintf("%1%2", "data-", name), v);
+	return Attr(sprint("data-%", name), v);
 }
 
 // DataAttr attributes automatically have their name prefixed with "data-".
@@ -699,4 +702,30 @@ EncType :: (v: string) -> *Node {
 
 Dir :: (v: string) -> *Node {
 	return Attr("dir", v);
+}
+
+#scope_module
+
+// If HTML element
+is_void_html_element :: (name: string) -> bool {
+    if name == {
+       case "area";    return true;
+       case "base";    return true;
+       case "br";      return true;
+       case "col";     return true;
+       case "command"; return true;
+       case "embed";   return true;
+       case "hr";      return true;
+       case "img";     return true;
+       case "input";   return true;
+       case "keygen";  return true;
+       case "link";    return true;
+       case "meta";    return true;
+       case "param";   return true;
+       case "source";  return true;
+       case "track";   return true;
+       case "wbr";     return true;
+    }
+
+    return false;
 }
